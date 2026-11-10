@@ -1,4 +1,4 @@
-# bot-iol
+# botiol
 
 Plataforma local para operar CEDEARs (NVDA, AMD) a través de la API de InvertirOnline (IOL): bot con gestión de riesgo y panel web en tiempo real.
 
