@@ -4,3 +4,6 @@ packages:
 
 onlyBuiltDependencies:
   - esbuild
+
+# No instalar versiones publicadas hace menos de 24 h (protección de cadena de suministro).
+minimumReleaseAge: 1440
