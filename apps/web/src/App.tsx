@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
-import { DEFAULT_INSTRUMENTS, type Quote } from '@bot-iol/shared';
+import { DEFAULT_INSTRUMENTS, type Quote, type TradePlan } from '@bot-iol/shared';
 import { fetchQuote } from './api';
+import { Journal } from './Journal';
+import { Planner } from './Planner';
 
 type QuoteState = { status: 'loading' } | { status: 'ok'; quote: Quote } | { status: 'error'; message: string };
 
@@ -56,6 +58,8 @@ function QuoteCard({ symbol }: { symbol: string }) {
 }
 
 export function App() {
+  const [plan, setPlan] = useState<TradePlan | null>(null);
+  const onPlan = useCallback((p: TradePlan) => setPlan(p), []);
   return (
     <main>
       <h1>Bot IOL</h1>
@@ -65,6 +69,11 @@ export function App() {
           <QuoteCard key={i.symbol} symbol={i.symbol} />
         ))}
       </section>
+      <section className="stack">
+        <Planner onPlan={onPlan} />
+        <Journal plan={plan} />
+      </section>
+      <p className="muted small">Herramienta de cálculo personal. No es asesoramiento financiero.</p>
     </main>
   );
 }

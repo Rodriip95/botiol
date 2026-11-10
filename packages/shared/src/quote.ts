@@ -26,3 +26,15 @@ export interface ApiError {
   error: string;
   message: string;
 }
+
+/** Respuesta de GET /api/atr/:symbol (velas diarias). */
+export interface AtrResponse {
+  symbol: string;
+  period: number;
+  atr: number;
+  /** Cantidad de velas diarias usadas. */
+  candles: number;
+  lastClose: number;
+  /** Fecha de la última vela (ISO 8601). */
+  lastDate: string;
+}

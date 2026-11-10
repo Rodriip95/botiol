@@ -1,5 +1,6 @@
 import Fastify, { type FastifyInstance } from 'fastify';
 import type { IolClient } from './iol/index.js';
+import { atrRoutes } from './routes/atr.js';
 import { quoteRoutes } from './routes/quotes.js';
 
 export interface AppDeps {
@@ -20,6 +21,7 @@ export function buildServer({ iol, logger = true }: AppDeps): FastifyInstance {
 
   app.get('/health', async () => ({ status: 'ok', time: new Date().toISOString() }));
   app.register(quoteRoutes, { prefix: '/api', iol });
+  app.register(atrRoutes, { prefix: '/api', iol });
 
   return app;
 }
