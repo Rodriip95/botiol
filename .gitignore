@@ -1,0 +1,20 @@
+node_modules/
+dist/
+*.tsbuildinfo
+coverage/
+
+# Credenciales: nunca subir al repo
+.env
+.env.*
+!.env.example
+
+# SQLite (Prisma)
+*.db
+*.db-journal
+
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.log
