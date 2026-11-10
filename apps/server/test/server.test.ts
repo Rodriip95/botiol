@@ -44,3 +44,24 @@ describe('server', () => {
     expect(res.json().error).toBe('iol_auth');
   });
 });
+
+describe('GET /api/atr/:symbol', () => {
+  const candles = Array.from({ length: 20 }, (_, i) => ({
+    time: `2026-10-${String(i + 1).padStart(2, '0')}T20:00:00.000Z`,
+    open: 100, high: 102, low: 98, close: 100,
+  }));
+  const iolWith = (getDailyCandles: IolClient['getDailyCandles']) =>
+    ({ getQuote: async () => quote, getDailyCandles }) as unknown as IolClient;
+
+  it('calcula el ATR con velas diarias', async () => {
+    const app = buildServer({ iol: iolWith(async () => candles), logger: false });
+    const res = await app.inject({ method: 'GET', url: '/api/atr/nvda' });
+    expect(res.statusCode).toBe(200);
+    expect(res.json()).toMatchObject({ symbol: 'NVDA', period: 14, atr: 4, candles: 20, lastClose: 100 });
+  });
+
+  it('422 si no hay velas suficientes', async () => {
+    const app = buildServer({ iol: iolWith(async () => candles.slice(0, 5)), logger: false });
+    expect((await app.inject({ method: 'GET', url: '/api/atr/NVDA' })).statusCode).toBe(422);
+  });
+});

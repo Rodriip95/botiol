@@ -167,3 +167,17 @@ describe('parseIolDateTime', () => {
     expect(parseIolDateTime('2026-11-10T11:00:00Z')).toBe('2026-11-10T11:00:00.000Z');
   });
 });
+
+describe('toDailyCandles', () => {
+  it('una vela por día, ordenada y sin registros vacíos', async () => {
+    const { toDailyCandles } = await import('../src/iol/index.js');
+    const row = (fechaHora: string, ultimoPrecio: number) => ({ ...cotizacion, fechaHora, ultimoPrecio });
+    const out = toDailyCandles([
+      row('2026-11-07T16:59:00', 15100),
+      row('2026-11-06T16:59:00', 15000),
+      row('2026-11-07T12:00:00', 14900),
+      { ...row('2026-11-05T16:59:00', 0), maximo: 0, minimo: 0 },
+    ]);
+    expect(out.map((c) => c.close)).toEqual([15000, 15100]);
+  });
+});

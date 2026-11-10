@@ -1,5 +1,5 @@
 import axios, { type AxiosInstance, type AxiosRequestConfig, isAxiosError } from 'axios';
-import type { Market, Quote } from '@bot-iol/shared';
+import type { Candle, Market, Quote } from '@bot-iol/shared';
 import { IolAuthError, IolError } from './errors.js';
 import type { IolCotizacion, IolPlazo, IolTokenResponse } from './types.js';
 
@@ -69,6 +69,18 @@ export class IolClient {
       params: plazo ? { 'model.plazo': plazo } : undefined,
     });
     return toQuote(symbol, market, raw);
+  }
+
+  /**
+   * Velas diarias (serie histórica sin ajustar) entre dos fechas YYYY-MM-DD,
+   * ordenadas de la más vieja a la más nueva.
+   */
+  async getDailyCandles(symbol: string, from: string, to: string, market: Market = 'bCBA'): Promise<Candle[]> {
+    const raw = await this.request<IolCotizacion[]>({
+      method: 'GET',
+      url: `/api/v2/${encodeURIComponent(market)}/Titulos/${encodeURIComponent(symbol)}/Cotizacion/seriehistorica/${from}/${to}/sinAjustar`,
+    });
+    return toDailyCandles(raw ?? []);
   }
 
   /** Request autenticado. Si IOL responde 401, renueva el token y reintenta una vez. */
@@ -185,6 +197,24 @@ export function toQuote(symbol: string, market: Market, raw: IolCotizacion): Quo
     ask: best?.precioVenta || null,
     timestamp: parseIolDateTime(raw.fechaHora),
   };
+}
+
+/**
+ * Normaliza la serie histórica: una vela por día (la última cotización del día),
+ * descartando registros sin precios, ordenada de vieja a nueva.
+ */
+export function toDailyCandles(raw: IolCotizacion[]): Candle[] {
+  const byDay = new Map<string, Candle>();
+  for (const r of raw) {
+    if (!(r.maximo > 0 && r.minimo > 0 && r.ultimoPrecio > 0)) continue;
+    const time = parseIolDateTime(r.fechaHora);
+    const day = time.slice(0, 10);
+    const prev = byDay.get(day);
+    if (!prev || prev.time < time) {
+      byDay.set(day, { time, open: r.apertura || r.ultimoPrecio, high: r.maximo, low: r.minimo, close: r.ultimoPrecio });
+    }
+  }
+  return [...byDay.values()].sort((a, b) => a.time.localeCompare(b.time));
 }
 
 /**
