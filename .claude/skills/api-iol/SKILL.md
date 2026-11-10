@@ -49,7 +49,7 @@ Cuerpo típico de `Comprar` / `Vender` (verificar en Swagger):
 - La respuesta trae un **número de operación**: guardarlo en `Order.iolId` y consultar su estado hasta que quede terminada, parcial o cancelada.
 - **IOL no tiene stop loss ni take profit nativos en la API**: el bot los gestiona monitoreando el precio y enviando la orden de salida. Por eso el bot debe estar corriendo mientras haya posiciones abiertas.
 - Las órdenes límite vencen al final de la validez; al cierre, conciliar órdenes pendientes y portafolio.
-- Hay una operatoria de compra de prueba en modo simulación: **el bot nunca llama a `operar/*` si el modo es simulación**. Ese chequeo va en un solo lugar del cliente.
+- Modo simulación: **el bot nunca llama a `operar/*` si el modo es simulación**. Ese chequeo va en un solo lugar del cliente.
 
 ## Límites de uso
 
