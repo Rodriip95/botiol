@@ -8,6 +8,7 @@ Plataforma local para operar CEDEARs (NVDA, AMD) a través de la API de Invertir
 
 ```
 apps/
+  fodears/   FODEARS: calculadora y portfolio de CEDEARs (microapp pública, ver su README)
   server/    Fastify + cliente IOL (después: bot, Prisma, Socket.io)
   web/       React + Vite (panel)
 packages/

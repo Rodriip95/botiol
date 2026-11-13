@@ -9,6 +9,7 @@
     "dev": "pnpm --parallel --filter @bot-iol/server --filter @bot-iol/web dev",
     "dev:server": "pnpm --filter @bot-iol/server dev",
     "dev:web": "pnpm --filter @bot-iol/web dev",
+    "dev:fodears": "pnpm --filter @bot-iol/fodears dev",
     "build": "pnpm -r build",
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r test",

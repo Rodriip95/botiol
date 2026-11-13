@@ -1,0 +1,29 @@
+rules_version = '2';
+
+// Cada usuario solo puede leer y escribir sus propias consultas.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{uid}/entries/{entryId} {
+      allow read, delete: if request.auth != null && request.auth.uid == uid;
+
+      allow create: if request.auth != null && request.auth.uid == uid
+        && validEntry(request.resource.data);
+
+      // Solo se puede mover dentro o fuera del portfolio.
+      allow update: if request.auth != null && request.auth.uid == uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['inPortfolio'])
+        && request.resource.data.inPortfolio is bool;
+    }
+  }
+}
+
+function validEntry(d) {
+  return d.keys().hasOnly(['symbol', 'quantity', 'invested', 'date', 'inPortfolio', 'createdAt', 'snapshot'])
+    && d.symbol is string && d.symbol.matches('^[A-Z0-9.]{1,12}$')
+    && d.quantity is int && d.quantity >= 1 && d.quantity <= 10000000
+    && d.invested is number && d.invested > 0 && d.invested <= 10000000000000
+    && (d.date == null || (d.date is string && d.date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')))
+    && d.inPortfolio is bool
+    && d.createdAt is int
+    && d.snapshot is map;
+}
