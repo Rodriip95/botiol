@@ -8,6 +8,7 @@ import { PortfolioView } from './views/PortfolioView';
 import { HistoryView } from './views/HistoryView';
 import { Icon } from './components/Icon';
 import { amountInput } from './lib/format';
+import { formatQuantityTyping } from './lib/validation';
 
 const isErrorMsg = (msg: string) => /^(error|no pudimos)/i.test(msg);
 
@@ -66,7 +67,7 @@ export function App() {
         n: (p?.n ?? 0) + 1,
         full: !!entry,
         form: entry
-          ? { symbol: entry.symbol, quantity: String(entry.quantity), invested: amountInput(entry.invested), date: entry.date ?? '' }
+          ? { symbol: entry.symbol, quantity: formatQuantityTyping(String(entry.quantity)), invested: amountInput(entry.invested), date: entry.date ?? '' }
           : { symbol },
       }));
       go('calc');
