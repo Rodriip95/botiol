@@ -3,6 +3,7 @@ import { formatAmountTyping, formatQuantityTyping, parseAmount, validateCalc } f
 import { aggregateHoldings, closeAt, computePnl } from './pnl';
 import { normalizeData912 } from '../data/providers';
 import type { CedearQuote } from './types';
+import { isMarketOpen } from './marketHours';
 
 const known = new Set(['AAPL', 'SPY']);
 const now = new Date('2026-11-13T15:00:00');
@@ -173,4 +174,15 @@ describe('formateo de miles al tipear', () => {
   it('lo formateado sigue siendo válido para parseAmount', () => {
     for (const raw of ['1234567,89', '150000', '1500.5']) expect(parseAmount(formatAmountTyping(raw))).not.toBeNull();
   });
+});
+
+describe('isMarketOpen (hora de Buenos Aires)', () => {
+  it.each([
+    ['2026-11-17T14:00:00Z', true], // martes 11:00 ART
+    ['2026-11-17T13:59:00Z', false], // martes 10:59
+    ['2026-11-17T20:29:00Z', true], // martes 17:29 (margen por la demora de data912)
+    ['2026-11-17T20:30:00Z', false], // martes 17:30
+    ['2026-11-21T16:00:00Z', false], // sábado 13:00
+    ['2026-11-23T02:00:00Z', false], // domingo 23:00
+  ])('%s → %s', (iso, open) => expect(isMarketOpen(new Date(iso))).toBe(open));
 });
