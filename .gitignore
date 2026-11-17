@@ -8,10 +8,6 @@ coverage/
 .env.*
 !.env.example
 
-# SQLite (Prisma)
-*.db
-*.db-journal
-
 .DS_Store
 Thumbs.db
 .vscode/*
