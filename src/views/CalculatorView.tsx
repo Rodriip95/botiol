@@ -5,9 +5,10 @@ import { useHistory } from '../data/hooks';
 import { entriesRepo } from '../data/entries';
 import { useAuth } from '../auth/AuthContext';
 import { computePnl } from '../lib/pnl';
-import { MIN_DATE, parseAmount, todayIso, validateCalc, type CalcErrors, type CalcForm, type ParsedCalc } from '../lib/validation';
+import { MIN_DATE, formatAmountTyping, formatQuantityTyping, parseAmount, todayIso, validateCalc, type CalcErrors, type CalcForm, type ParsedCalc } from '../lib/validation';
 import { amountInput, int, money, money0, pct, short, signedMoney, signedPct, tone, usd } from '../lib/format';
 import { CedearPicker } from '../components/CedearPicker';
+import { FormattedInput } from '../components/FormattedInput';
 import { AreaChart } from '../components/Charts';
 import { Card, Empty, Kpi, Skeleton } from '../components/Ui';
 import { GoogleMark, Icon } from '../components/Icon';
@@ -230,14 +231,16 @@ export function CalculatorView({
             <div className="field-row">
               <div className="field">
                 <label htmlFor="f-quantity">Nominales</label>
-                <input
+                <FormattedInput
                   id="f-quantity"
                   inputMode="numeric"
+                  autoComplete="off"
                   placeholder="Ej. 25"
                   value={form.quantity}
                   aria-invalid={!!errors.quantity || undefined}
                   aria-describedby={errors.quantity ? 'e-quantity' : 'h-quantity'}
-                  onChange={(e) => set('quantity')(e.target.value.replace(/[^\d.]/g, ''))}
+                  format={formatQuantityTyping}
+                  onValueChange={set('quantity')}
                 />
                 {errors.quantity ? (
                   <p className="field__error" id="e-quantity" role="alert">
@@ -253,14 +256,16 @@ export function CalculatorView({
                 <label htmlFor="f-invested">Total invertido</label>
                 <div className="input-prefix">
                   <span>$</span>
-                  <input
+                  <FormattedInput
                     id="f-invested"
                     inputMode="decimal"
+                    autoComplete="off"
                     placeholder="150.000,00"
                     value={form.invested}
                     aria-invalid={!!errors.invested || undefined}
                     aria-describedby={errors.invested ? 'e-invested' : 'h-invested'}
-                    onChange={(e) => set('invested')(e.target.value.replace(/[^\d.,]/g, ''))}
+                    format={formatAmountTyping}
+                    onValueChange={set('invested')}
                     onBlur={(e) => {
                       // Al salir del campo, lo muestra con formato argentino: 101180 → 101.180,00
                       const n = parseAmount(e.currentTarget.value);

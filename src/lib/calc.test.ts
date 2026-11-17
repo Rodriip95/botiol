@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseAmount, validateCalc } from './validation';
+import { formatAmountTyping, formatQuantityTyping, parseAmount, validateCalc } from './validation';
 import { aggregateHoldings, closeAt, computePnl } from './pnl';
 import { normalizeData912 } from '../data/providers';
 import type { CedearQuote } from './types';
@@ -144,5 +144,33 @@ describe('normalizeData912', () => {
     expect(r.map((q) => q.symbol).sort()).toEqual(['AAPL', 'C', 'DD']);
     expect(r.find((q) => q.symbol === 'AAPL')?.usdMep).toBe(19);
     expect(r.find((q) => q.symbol === 'AAPL')?.name).toBe('Apple');
+  });
+});
+
+describe('formateo de miles al tipear', () => {
+  it.each([
+    ['', ''],
+    ['25', '25'],
+    ['25000', '25.000'],
+    ['1.2345', '12.345'],
+    ['0012', '12'],
+    ['1a2b3', '123'],
+  ])('nominales %j → %j', (raw, out) => expect(formatQuantityTyping(raw)).toBe(out));
+
+  it.each([
+    ['150000', '150.000'],
+    ['150.0000', '1.500.000'],
+    ['150000,5', '150.000,5'],
+    ['150.000,567', '150.000,56'],
+    ['1500.', '1.500,'],
+    ['1.500.', '1.500,'],
+    [',5', '0,5'],
+    ['1234.5', '1.234,5'],
+    ['1,234,567.89', '1.234.567,89'],
+    ['$ 2.000', '2.000'],
+  ])('monto %j → %j', (raw, out) => expect(formatAmountTyping(raw)).toBe(out));
+
+  it('lo formateado sigue siendo válido para parseAmount', () => {
+    for (const raw of ['1234567,89', '150000', '1500.5']) expect(parseAmount(formatAmountTyping(raw))).not.toBeNull();
   });
 });
