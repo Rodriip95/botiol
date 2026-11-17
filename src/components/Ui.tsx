@@ -50,7 +50,10 @@ export function Kpi({
       </header>
       <div className="kpi__body">
         <div>
-          <strong className="kpi__value">{value}</strong>
+          {/* --chars: la fuente se achica con montos largos para no cortarlos con "…" en pantallas chicas. */}
+          <strong className="kpi__value" title={value} style={{ ['--chars' as string]: value.length }}>
+            {value}
+          </strong>
           {(delta || foot) && (
             <p className="kpi__foot">
               {delta && <span className={`delta delta--${deltaTone}`}>{delta}</span>}

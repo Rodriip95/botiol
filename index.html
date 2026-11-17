@@ -1,21 +1,119 @@
 <!doctype html>
-<html lang="es">
+<html lang="es-AR">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <!--
+      SEO: la URL canónica es la de producción en Vercel. Si se agrega un dominio propio,
+      actualizarla acá, en public/robots.txt y en public/sitemap.xml.
+    -->
+    <title>Calculadora de CEDEARs: ganancia, rendimiento y portfolio | FODEARS</title>
+    <meta
+      name="description"
+      content="Calculá gratis si tus CEDEARs te dan ganancia o pérdida: precio actual de BYMA, resultado en pesos y en dólar MEP, rendimiento anual y comparación contra el SPY. Guardá tu portfolio con Google."
+    />
+    <meta name="keywords" content="calculadora de CEDEARs, ganancia CEDEARs, cotización CEDEARs, dólar MEP, portfolio de CEDEARs, rendimiento CEDEAR, BYMA" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <link rel="canonical" href="https://fodears-rodriip95s-projects.vercel.app/" />
     <meta name="theme-color" content="#0e0f0c" />
-    <meta name="description" content="FODEARS: calculá si los CEDEARs que compraste te dan ganancia o pérdida y armá tu portfolio." />
-    <title>FODEARS · Portfolio de CEDEARs</title>
+    <meta name="color-scheme" content="dark" />
+    <meta name="application-name" content="FODEARS" />
+    <meta name="apple-mobile-web-app-title" content="FODEARS" />
+
+    <!-- Open Graph / redes sociales -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="FODEARS" />
+    <meta property="og:locale" content="es_AR" />
+    <meta property="og:url" content="https://fodears-rodriip95s-projects.vercel.app/" />
+    <meta property="og:title" content="¿Tus CEDEARs te dan ganancia? Calculalo gratis | FODEARS" />
+    <meta
+      property="og:description"
+      content="Resultado en pesos y en dólar MEP, rendimiento anual y comparación contra el SPY. Armá tu portfolio de CEDEARs gratis."
+    />
+    <meta property="og:image" content="https://fodears-rodriip95s-projects.vercel.app/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="FODEARS: calculadora de ganancia de CEDEARs" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="¿Tus CEDEARs te dan ganancia? Calculalo gratis | FODEARS" />
+    <meta name="twitter:description" content="Resultado en pesos y en dólar MEP, rendimiento anual y comparación contra el SPY." />
+    <meta name="twitter:image" content="https://fodears-rodriip95s-projects.vercel.app/og-image.png" />
+
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+
+    <!-- Fuentes: preconnect + display=swap para no bloquear el primer render. -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://data912.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap"
       rel="stylesheet"
     />
+
+    <!-- Estilo mínimo del contenido estático: evita un flash blanco antes de que cargue el CSS de la app. -->
+    <style>
+      html { background: #0e0f0c; color-scheme: dark; }
+      .seo-fallback { max-width: 720px; margin: 0 auto; padding: 48px 20px; color: #d9dccf; font: 16px/1.55 'Plus Jakarta Sans', system-ui, sans-serif; }
+      .seo-fallback h1 { color: #f4f5ef; font-size: clamp(28px, 6vw, 44px); line-height: 1.1; letter-spacing: -0.03em; margin: 0 0 16px; }
+    </style>
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebApplication",
+            "@id": "https://fodears-rodriip95s-projects.vercel.app/#app",
+            "name": "FODEARS",
+            "alternateName": "Calculadora de CEDEARs",
+            "url": "https://fodears-rodriip95s-projects.vercel.app/",
+            "description": "Calculadora de ganancia de CEDEARs con precio de BYMA, dólar MEP implícito, rendimiento anual, comparación contra el SPY y portfolio.",
+            "applicationCategory": "FinanceApplication",
+            "operatingSystem": "Web",
+            "inLanguage": "es-AR",
+            "image": "https://fodears-rodriip95s-projects.vercel.app/og-image.png",
+            "offers": { "@type": "Offer", "price": "0", "priceCurrency": "ARS" },
+            "featureList": [
+              "Calculadora de ganancia o pérdida de CEDEARs",
+              "Resultado en pesos y en dólar MEP",
+              "Rendimiento anualizado y comparación contra el SPY",
+              "Cotizaciones de más de 400 CEDEARs",
+              "Portfolio e historial con login de Google"
+            ]
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://fodears-rodriip95s-projects.vercel.app/#website",
+            "name": "FODEARS",
+            "url": "https://fodears-rodriip95s-projects.vercel.app/",
+            "inLanguage": "es-AR"
+          }
+        ]
+      }
+    </script>
   </head>
   <body>
-    <div id="root"></div>
+    <!--
+      Contenido estático para buscadores y para el primer pintado: React lo reemplaza al montar.
+      Mantener un solo <h1> y el texto alineado con lo que muestra la app.
+    -->
+    <div id="root">
+      <main class="seo-fallback">
+        <h1>Calculadora de CEDEARs: ¿te dan ganancia o pérdida?</h1>
+        <p>
+          Elegí el CEDEAR que compraste, cargá los nominales y el total que pagaste. FODEARS te muestra el resultado en pesos y en
+          dólar MEP, el rendimiento anual y cómo te fue contra el SPY, con precios de BYMA.
+        </p>
+        <ul>
+          <li>Más de 400 CEDEARs: Apple, NVIDIA, MercadoLibre, Applied Materials, SPY y más.</li>
+          <li>Dólar MEP implícito y precio en dólares de cada CEDEAR.</li>
+          <li>Portfolio e historial gratis iniciando sesión con Google.</li>
+        </ul>
+        <noscript>Para usar la calculadora necesitás activar JavaScript.</noscript>
+      </main>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

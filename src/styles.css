@@ -411,6 +411,7 @@ button.avatar[aria-expanded='true'] {
 
 .view {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 18px;
   animation: in 0.35s ease both;
 }
@@ -626,7 +627,7 @@ button.avatar[aria-expanded='true'] {
 }
 .kpi__value {
   display: block;
-  font-size: clamp(15px, 10cqi, 26px);
+  font-size: clamp(12px, min(max(15px, 10cqi), 190cqi / var(--chars, 10)), 26px);
   font-weight: 800;
   letter-spacing: -0.03em;
   font-variant-numeric: tabular-nums;
@@ -831,6 +832,7 @@ button.avatar[aria-expanded='true'] {
 }
 .calc-result {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 14px;
   min-width: 0;
   container-type: inline-size;
@@ -1464,8 +1466,11 @@ button.avatar[aria-expanded='true'] {
 }
 .pill-bars__bar {
   width: 100%;
+  height: var(--pct, 10%);
   border-radius: 999px;
-  transition: height 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition:
+    height 0.6s cubic-bezier(0.2, 0.8, 0.2, 1),
+    width 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 .pill-bars__bar--up {
   background: linear-gradient(180deg, var(--lime), #a8cc3e);
@@ -1722,11 +1727,13 @@ button.avatar[aria-expanded='true'] {
 
 .history-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  /* min(280px, 100%): en pantallas de 320 px la tarjeta no fuerza un ancho mayor que el disponible. */
+  grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
   gap: 14px;
 }
 .entry {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   grid-template-rows: auto auto auto 1fr auto;
   gap: 14px;
   padding: 18px;
@@ -1757,8 +1764,9 @@ button.avatar[aria-expanded='true'] {
 }
 .entry__pnl {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 10px;
+  gap: 4px 10px;
 }
 .entry__pnl strong {
   font-size: 24px;
@@ -1767,7 +1775,7 @@ button.avatar[aria-expanded='true'] {
 }
 .entry__dl {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 10px;
   margin: 0;
 }
@@ -1782,12 +1790,14 @@ button.avatar[aria-expanded='true'] {
 }
 .entry__dl dd {
   margin: 0;
+  overflow-wrap: anywhere;
   font-family: var(--mono);
   font-size: 13.5px;
   letter-spacing: -0.02em;
 }
 .entry__actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 6px;
   align-items: center;
   /* Siempre al pie aunque la tarjeta vecina tenga más texto. */
@@ -1994,11 +2004,53 @@ button.avatar[aria-expanded='true'] {
   .save-bar > .btn {
     width: 100%;
   }
+  /* Gráfico de barras: en mobile cada barra es una fila (etiqueta · barra · valor), así nunca scrollea en horizontal. */
+  .pill-bars,
+  .sector-card .pill-bars {
+    flex-direction: column;
+    height: auto;
+    gap: 10px;
+    overflow: visible;
+  }
+  .pill-bars__col {
+    grid-template-columns: minmax(96px, 32%) minmax(0, 1fr) auto;
+    grid-template-rows: none;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+  }
+  .pill-bars__label {
+    order: -1;
+    justify-self: start;
+    max-width: 100%;
+  }
+  .pill-bars__track {
+    width: 100%;
+    height: 12px;
+    align-items: stretch;
+  }
+  .pill-bars__bar {
+    width: var(--pct, 10%);
+    height: 100%;
+  }
+  .pill-bars__val {
+    order: 1;
+    min-width: 48px;
+    text-align: right;
+  }
 }
 
 @media (max-width: 420px) {
   .card__action {
     display: none;
+  }
+  .hide-xs {
+    display: none;
+  }
+  .kpi__foot {
+    flex-wrap: wrap;
+    white-space: normal;
+    row-gap: 2px;
   }
   .table .cell-ticker small {
     display: none;
@@ -2037,4 +2089,318 @@ button.avatar[aria-expanded='true'] {
     animation: none !important;
     transition: none !important;
   }
+}
+
+/* Pantallas muy angostas (iPhone SE, Android chicos): las tablas entran sin scroll horizontal. */
+@media (max-width: 380px) {
+  .table .ticker-badge {
+    display: none;
+  }
+  .table td,
+  .table th {
+    padding: 10px 4px;
+  }
+  .table {
+    font-size: 12.5px;
+  }
+}
+
+/* Los hijos de una grilla no pueden ser más anchos que su columna (min-width: auto los estira con montos largos). */
+.calc-grid > *,
+.result-grid > *,
+.pf-grid > *,
+.history-grid > *,
+.kpi-row > *,
+.hero__kpis > * {
+  min-width: 0;
+}
+
+/* ---------- Calculadora como protagonista ---------- */
+
+.calc-head {
+  display: grid;
+  gap: 10px;
+}
+.calc-head__title {
+  font-size: clamp(26px, 3vw, 40px);
+  line-height: 1.05;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+}
+.calc-head__title span {
+  color: var(--lime);
+}
+.calc-head__sub {
+  color: var(--text-2);
+  font-size: 15px;
+  max-width: 60ch;
+}
+
+.quick-picks {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+}
+.quick-picks .field__hint {
+  margin: 0 2px 0 0;
+}
+.chip--sm {
+  height: 28px;
+  padding: 0 10px;
+  font-size: 12px;
+}
+
+.steps {
+  display: grid;
+  gap: 10px;
+  max-width: 40ch;
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: step;
+  text-align: left;
+  font-size: 14px;
+}
+.steps li {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  counter-increment: step;
+}
+.steps li::before {
+  content: counter(step);
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  color: var(--lime);
+  font-size: 12px;
+  font-weight: 800;
+}
+.steps b {
+  color: var(--text);
+}
+
+/* El mercado hoy: contexto secundario, debajo de la calculadora. */
+.pulse {
+  display: grid;
+  gap: 12px;
+}
+.pulse__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.pulse__head h2 {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.pulse__grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+.pulse__item {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1px solid var(--line-soft);
+  background: var(--surface);
+  color: inherit;
+  text-align: left;
+  font: inherit;
+}
+button.pulse__item {
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
+}
+button.pulse__item:hover,
+button.pulse__item:focus-visible {
+  border-color: var(--lime);
+  background: var(--surface-2);
+}
+.pulse__item--featured {
+  background: var(--lime);
+  border-color: var(--lime);
+  color: var(--lime-ink);
+}
+.pulse__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.pulse__item--featured .pulse__label,
+.pulse__item--featured .pulse__foot {
+  color: rgba(21, 26, 5, 0.72);
+}
+.pulse__value {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pulse__foot {
+  font-size: 12px;
+  color: var(--muted);
+  font-family: var(--mono);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 760px) {
+  /* En la calculadora el buscador del formulario ya está a la vista: no duplicarlo arriba. */
+  .app[data-route='calc'] .topbar .picker--top {
+    display: none;
+  }
+  /* En mobile el resultado aparece al calcular; la tarjeta vacía solo empujaba contenido. */
+  .result-empty {
+    display: none;
+  }
+  .calc-head {
+    gap: 8px;
+  }
+  .calc-head__sub {
+    font-size: 14px;
+  }
+  .pulse__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .pulse__item {
+    padding: 12px 14px;
+  }
+  .pulse__value {
+    font-size: 18px;
+  }
+}
+
+/* ---------- Mercado: filtros compactos ---------- */
+
+.screener__tools .select {
+  flex: 0 1 220px;
+  min-width: 0;
+}
+.select.is-active select {
+  border-color: var(--lime);
+  color: var(--lime);
+}
+.screener__tools + * {
+  margin-top: 14px;
+}
+
+.market-summary {
+  display: none;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-2);
+}
+
+/* Gráfico por categoría plegable: <details> con la cabecera de una card. */
+.sector-card > summary {
+  list-style: none;
+  cursor: pointer;
+}
+.sector-card > summary::-webkit-details-marker {
+  display: none;
+}
+.sector-card:not([open]) > summary {
+  margin-bottom: 0;
+}
+.sector-card__chevron {
+  display: inline-grid;
+  margin-left: 8px;
+  color: var(--muted);
+  transition: transform 0.2s;
+}
+.sector-card[open] .sector-card__chevron {
+  transform: rotate(90deg);
+}
+.pill-bars__col--btn {
+  border: 0;
+  background: none;
+  padding: 0;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  border-radius: 12px;
+}
+.pill-bars__col--btn:focus-visible {
+  outline: 2px solid var(--lime);
+  outline-offset: 2px;
+}
+.pill-bars.has-active .pill-bars__col:not(.is-active) {
+  opacity: 0.45;
+}
+.pill-bars__col.is-active .pill-bars__label {
+  color: var(--lime);
+}
+
+@media (max-width: 760px) {
+  /* En mobile, un resumen de una línea en lugar de 4 tarjetas: la tabla queda más arriba. */
+  .market-summary {
+    display: block;
+  }
+  .market-kpis {
+    display: none;
+  }
+  .screener__tools .search {
+    flex: 1 1 100%;
+  }
+  .screener__tools .select {
+    flex: 1 1 calc(50% - 5px);
+  }
+}
+.screener__tools .select select {
+  min-width: 0;
+}
+
+@media (max-width: 760px) and (min-width: 360px) {
+  /* Nominales y total en la misma fila: el botón "Calcular" entra en la primera pantalla. */
+  .calc-form-card .field-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+}
+@media (max-width: 760px) {
+  .calc-head .eyebrow {
+    display: none;
+  }
+  .calc-head__title {
+    font-size: 26px;
+  }
+}
+
+/* Al hacer scroll automático (resultado, formulario, tabla) que no quede debajo de la barra superior fija. */
+.calc-result,
+.calc-form-card,
+.screener {
+  scroll-margin-top: 84px;
+}
+@media (max-width: 420px) {
+  .pulse__extra {
+    display: none;
+  }
+}
+.calc-head .eyebrow {
+  justify-self: start;
 }

@@ -20,18 +20,28 @@ const config = {
 export const isFirebaseConfigured =
   !!config.apiKey && !!config.authDomain && !!config.projectId && !!config.appId;
 
-let cached: Promise<{ app: FirebaseApp; auth: Auth; db: Firestore }> | null = null;
+let cached: Promise<{ app: FirebaseApp; auth: Auth }> | null = null;
+let cachedDb: Promise<Firestore> | null = null;
 
+/** App + Auth: se cargan al abrir la app para saber si hay sesión. */
 export function getFirebase() {
   if (!isFirebaseConfigured) throw new Error('Firebase no está configurado');
   cached ??= (async () => {
-    const [{ initializeApp }, { getAuth }, { getFirestore }] = await Promise.all([
-      import('firebase/app'),
-      import('firebase/auth'),
-      import('firebase/firestore'),
-    ]);
+    const [{ initializeApp }, { getAuth }] = await Promise.all([import('firebase/app'), import('firebase/auth')]);
     const app = initializeApp(config);
-    return { app, auth: getAuth(app), db: getFirestore(app) };
+    return { app, auth: getAuth(app) };
   })();
   return cached;
+}
+
+/**
+ * Firestore (~170 kB gzip) se descarga recién cuando hay un usuario logueado que lee o guarda consultas.
+ * Así un visitante que solo usa la calculadora no lo baja (mejor LCP/INP, que también cuenta para SEO).
+ */
+export function getDb() {
+  cachedDb ??= (async () => {
+    const [{ app }, { getFirestore }] = await Promise.all([getFirebase(), import('firebase/firestore')]);
+    return getFirestore(app);
+  })();
+  return cachedDb;
 }

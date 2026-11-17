@@ -4,7 +4,7 @@
  * - Demo: localStorage, misma interfaz.
  */
 import type { NewEntry, SavedEntry } from '../lib/types';
-import { getFirebase, isFirebaseConfigured } from '../auth/firebase';
+import { getDb, isFirebaseConfigured } from '../auth/firebase';
 import { CATALOG_BY_SYMBOL } from './catalog';
 
 export interface EntriesRepo {
@@ -94,7 +94,7 @@ const firestoreRepo: EntriesRepo = {
     let unsub: (() => void) | undefined;
     let cancelled = false;
     (async () => {
-      const { db } = await getFirebase();
+      const db = await getDb();
       const { collection, onSnapshot, orderBy, query } = await import('firebase/firestore');
       if (cancelled) return;
       const q = query(collection(db, 'users', uid, 'entries'), orderBy('createdAt', 'desc'));
@@ -110,17 +110,17 @@ const firestoreRepo: EntriesRepo = {
     };
   },
   async add(uid, entry) {
-    const { db } = await getFirebase();
+    const db = await getDb();
     const { addDoc, collection } = await import('firebase/firestore');
     await addDoc(collection(db, 'users', uid, 'entries'), { ...entry, createdAt: Date.now() });
   },
   async update(uid, id, patch) {
-    const { db } = await getFirebase();
+    const db = await getDb();
     const { doc, updateDoc } = await import('firebase/firestore');
     await updateDoc(doc(db, 'users', uid, 'entries', id), patch);
   },
   async remove(uid, id) {
-    const { db } = await getFirebase();
+    const db = await getDb();
     const { deleteDoc, doc } = await import('firebase/firestore');
     await deleteDoc(doc(db, 'users', uid, 'entries', id));
   },

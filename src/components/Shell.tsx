@@ -87,7 +87,7 @@ export function Shell({
 }) {
   const { user, signIn, signOut, mode, loading } = useAuth();
   return (
-    <div className="app">
+    <div className="app" data-route={route}>
       <div className="frame">
         <aside className="rail" aria-label="Navegación">
           <Logo />

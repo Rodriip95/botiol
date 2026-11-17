@@ -200,20 +200,41 @@ export function Donut({
 
 /* ---------- Barras verticales tipo "píldora" ---------- */
 
-export function PillBars({ items }: { items: { label: string; value: number; display: string }[] }) {
+export function PillBars({
+  items,
+  active,
+  onSelect,
+}: {
+  items: { label: string; value: number; display: string }[];
+  /** Etiqueta seleccionada (resaltada). */
+  active?: string;
+  /** Si se pasa, cada barra es un botón (ej. filtrar la tabla por categoría). */
+  onSelect?: (label: string) => void;
+}) {
   const max = Math.max(...items.map((i) => Math.abs(i.value)), 1);
   return (
-    <div className="pill-bars">
+    <div className={`pill-bars${active ? ' has-active' : ''}`}>
       {items.map((it) => {
         const h = Math.max(10, (Math.abs(it.value) / max) * 100);
         const tone = it.value >= 0 ? 'up' : 'down';
-        return (
-          <div key={it.label} className="pill-bars__col">
+        const content = (
+          <>
             <span className={`pill-bars__val pill-bars__val--${tone}`}>{it.display}</span>
             <div className="pill-bars__track">
-              <span className={`pill-bars__bar pill-bars__bar--${tone}`} style={{ height: `${h}%` }} />
+              {/* --pct es alto en columnas (desktop) y ancho en filas (mobile). */}
+              <span className={`pill-bars__bar pill-bars__bar--${tone}`} style={{ ['--pct' as string]: `${h}%` }} />
             </div>
             <span className="pill-bars__label">{it.label}</span>
+          </>
+        );
+        const cls = `pill-bars__col${active === it.label ? ' is-active' : ''}`;
+        return onSelect ? (
+          <button key={it.label} type="button" className={`${cls} pill-bars__col--btn`} aria-pressed={active === it.label} onClick={() => onSelect(it.label)}>
+            {content}
+          </button>
+        ) : (
+          <div key={it.label} className={cls}>
+            {content}
           </div>
         );
       })}
