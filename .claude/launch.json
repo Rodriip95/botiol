@@ -4,9 +4,25 @@
     {
       "name": "fodears",
       "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["dev"],
+      "runtimeArgs": [
+        "dev"
+      ],
       "port": 5174,
       "url": "http://localhost:5174"
+    },
+    {
+      "name": "fodears-demo",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "exec",
+        "vite",
+        "--mode",
+        "demo",
+        "--port",
+        "5176"
+      ],
+      "port": 5176,
+      "url": "http://localhost:5176"
     }
   ]
 }

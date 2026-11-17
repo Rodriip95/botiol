@@ -13,6 +13,14 @@ import { formatQuantityTyping } from './lib/validation';
 const isErrorMsg = (msg: string) => /^(error|no pudimos)/i.test(msg);
 
 const ROUTES: Route[] =['calc', 'mercado', 'portfolio', 'historial'];
+/** Título de la pestaña por sección (la calculadora conserva el título de index.html, pensado para buscadores). */
+const TITLES: Record<Route, string> = {
+  calc: 'Calculadora de CEDEARs: ganancia, rendimiento y portfolio | FODEARS',
+  mercado: 'Cotizaciones de CEDEARs hoy | FODEARS',
+  portfolio: 'Mi portfolio de CEDEARs | FODEARS',
+  historial: 'Historial de consultas | FODEARS',
+};
+
 const routeFromHash = (): Route => {
   const h = window.location.hash.replace('#/', '').replace('#', '') as Route;
   return ROUTES.includes(h) ? h : 'calc';
@@ -20,6 +28,10 @@ const routeFromHash = (): Route => {
 
 export function App() {
   const [route, setRoute] = useState<Route>(routeFromHash);
+
+  useEffect(() => {
+    document.title = TITLES[route];
+  }, [route]);
   const { snapshot, bySymbol, error, reload } = useMarket();
   const { entries, error: entriesError } = useEntries();
   const [preset, setPreset] = useState<CalcPreset | null>(null);

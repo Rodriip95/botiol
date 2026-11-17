@@ -36,6 +36,12 @@ export function MarketView({
   const [limit, setLimit] = useState(PAGE);
 
   const quotes = snapshot?.quotes ?? [];
+  // En mobile el gráfico por categoría arranca cerrado para que la tabla quede a la vista.
+  const [isMobile] = useState(() => window.matchMedia('(max-width: 760px)').matches);
+  const pickSector = (s: Sector | 'Todos') => {
+    setSector((cur) => (cur === s ? 'Todos' : s));
+    setLimit(PAGE);
+  };
 
   const counts = useMemo(() => {
     const m = new Map<Sector, number>();
@@ -102,7 +108,11 @@ export function MarketView({
         </button>
       </header>
 
-      <div className="kpi-row">
+      <p className="market-summary">
+        <span className="t-up">{int(stats.up)} suben</span> · <span className="t-down">{int(stats.down)} bajan</span> · volumen $ {short(stats.volume)}
+      </p>
+
+      <div className="kpi-row market-kpis">
         <Kpi featured icon="market" label="CEDEARs listados" value={snapshot ? int(quotes.length) : '—'} foot="en pesos, plazo 24 hs" bars={[4, 6, 5, 7, 6, 8, 9]} />
         <Kpi icon="arrowUp" label="Suben hoy" value={int(stats.up)} delta={quotes.length ? `${Math.round((stats.up / quotes.length) * 100)} %` : undefined} deltaTone="up" foot="del total" />
         <Kpi icon="arrowDown" label="Bajan hoy" value={int(stats.down)} delta={quotes.length ? `${Math.round((stats.down / quotes.length) * 100)} %` : undefined} deltaTone="down" foot="del total" />
@@ -110,9 +120,26 @@ export function MarketView({
       </div>
 
       {stats.bySector.length > 0 && (
-        <Card title="Variación promedio por categoría" icon="pie" className="sector-card">
-          <PillBars items={stats.bySector.map((s) => ({ label: s.label, value: s.value, display: signedPctShort(s.value) }))} />
-        </Card>
+        <details className="card sector-card" open={!isMobile}>
+          <summary className="card__head sector-card__summary">
+            <span className="icon-chip">
+              <Icon name="pie" size={16} />
+            </span>
+            <h3>Variación promedio por categoría</h3>
+            <span className="card__action muted">Tocá una para filtrar</span>
+            <span className="sector-card__chevron" aria-hidden="true">
+              <Icon name="chevron" size={16} />
+            </span>
+          </summary>
+          <PillBars
+            items={stats.bySector.map((s) => ({ label: s.label, value: s.value, display: signedPctShort(s.value) }))}
+            active={sector === 'Todos' ? undefined : sector}
+            onSelect={(label) => {
+              pickSector(label as Sector);
+              document.querySelector('.screener')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }}
+          />
+        </details>
       )}
 
       <Card className="screener">
@@ -134,6 +161,17 @@ export function MarketView({
               </button>
             )}
           </div>
+          <label className={`select${sector !== 'Todos' ? ' is-active' : ''}`}>
+            <span className="sr-only">Categoría</span>
+            <select value={sector} onChange={(e) => pickSector(e.target.value as Sector | 'Todos')}>
+              <option value="Todos">Todas ({int(quotes.length)})</option>
+              {SECTORS.filter((s) => (counts.get(s) ?? 0) > 0).map((s) => (
+                <option key={s} value={s}>
+                  {s} ({counts.get(s)})
+                </option>
+              ))}
+            </select>
+          </label>
           <label className="select">
             <span className="sr-only">Ordenar</span>
             <select value={sort} onChange={(e) => setSort(e.target.value as SortKey)} disabled={!!q.trim()}>
@@ -144,29 +182,6 @@ export function MarketView({
               ))}
             </select>
           </label>
-        </div>
-
-        <div className="chips chips--scroll" role="tablist" aria-label="Categorías">
-          {(['Todos', ...SECTORS] as const).map((s) => {
-            const n = s === 'Todos' ? quotes.length : counts.get(s) ?? 0;
-            if (s !== 'Todos' && n === 0) return null;
-            return (
-              <button
-                key={s}
-                role="tab"
-                aria-selected={sector === s}
-                className={`chip${sector === s ? ' is-active' : ''}`}
-                style={s !== 'Todos' ? { ['--c' as string]: SECTOR_COLOR[s] } : undefined}
-                onClick={() => {
-                  setSector(s);
-                  setLimit(PAGE);
-                }}
-              >
-                {s !== 'Todos' && <span className="chip__dot" />}
-                {s} <small>{n}</small>
-              </button>
-            );
-          })}
         </div>
 
         {!snapshot ? (
@@ -192,14 +207,14 @@ export function MarketView({
                     <th className="num hide-md">Compra / Venta</th>
                     <th className="num hide-md">USD MEP</th>
                     <th className="num hide-sm">Volumen</th>
-                    <th aria-label="Acciones" />
+                    <th className="hide-xs" aria-label="Acciones" />
                   </tr>
                 </thead>
                 <tbody>
                   {rows.slice(0, limit).map((x) => (
                     <tr key={x.symbol}>
                       <td>
-                        <div className="cell-ticker">
+                        <button className="cell-ticker cell-ticker--btn" onClick={() => onCalc(x.symbol)} title="Abrir en la calculadora">
                           <span className="ticker-badge" style={{ ['--c' as string]: SECTOR_COLOR[x.sector] }}>
                             {x.symbol.slice(0, 4)}
                           </span>
@@ -207,7 +222,7 @@ export function MarketView({
                             <b>{x.symbol}</b>
                             <small>{x.name}</small>
                           </span>
-                        </div>
+                        </button>
                       </td>
                       <td className="hide-sm">
                         <span className="tag" style={{ ['--c' as string]: SECTOR_COLOR[x.sector] }}>
@@ -223,7 +238,7 @@ export function MarketView({
                       </td>
                       <td className="num mono hide-md">{x.usdMep !== null ? usd(x.usdMep) : '—'}</td>
                       <td className="num mono hide-sm">{short(x.volume)}</td>
-                      <td className="num">
+                      <td className="num hide-xs">
                         <button className="btn btn--sm btn--ghost" onClick={() => onCalc(x.symbol)}>
                           <Icon name="calc" size={14} /> <span className="hide-sm">Calcular</span>
                         </button>

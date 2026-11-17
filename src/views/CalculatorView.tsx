@@ -97,6 +97,18 @@ export function CalculatorView({
     setErrors({});
     setCalc(r.value);
     setSaved(false);
+    // En una sola columna el resultado queda debajo del formulario: lo llevamos a la vista.
+    if (window.matchMedia('(max-width: 1180px)').matches) {
+      requestAnimationFrame(() => document.querySelector('.calc-result')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+    }
+  };
+
+  /** Desde "El mercado hoy": carga el CEDEAR en el formulario y pasa a los nominales. */
+  const pickMover = (symbol: string) => {
+    set('symbol')(symbol);
+    setCalc(null);
+    document.querySelector('.calc-form-card')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setTimeout(() => document.getElementById('f-quantity')?.focus({ preventScroll: true }), 350);
   };
 
   const save = async (inPortfolio: boolean) => {
@@ -125,8 +137,8 @@ export function CalculatorView({
   };
 
   const movers = useMemo(() => {
-    const liquid = quotes.filter((q) => q.volume * q.last > 5e6);
-    const pool = liquid.length > 5 ? liquid : quotes;
+    // Solo los 60 más operados en pesos: una especie con 3 operaciones puede marcar +300 % y no dice nada del mercado.
+    const pool = [...quotes].sort((a, b) => b.volume * b.last - a.volume * a.last).slice(0, 60);
     const up = [...pool].sort((a, b) => b.changePct - a.changePct)[0];
     const down = [...pool].sort((a, b) => a.changePct - b.changePct)[0];
     const top = [...pool].sort((a, b) => b.volume * b.last - a.volume * a.last)[0];
@@ -140,71 +152,15 @@ export function CalculatorView({
 
   return (
     <div className="view">
-      <section className="hero">
-        <div className="hero__copy">
-          <span className="eyebrow">
-            <span className="eyebrow__dot" /> Calculadora de CEDEARs
-          </span>
-          <h1 className="hero__title">
-            FODEARS
-          </h1>
-          <p className="hero__sub">
-            Tu <b>port<em>FO</em>lio</b> de <b>ce<em>DEARS</em></b>. Cargá qué compraste, cuántos nominales y cuánto pagaste: te
-            decimos si hoy vas ganando o perdiendo, y cómo te fue contra el mercado.
-          </p>
-        </div>
-        <div className="hero__kpis">
-          {snapshot ? (
-            <>
-              <Kpi
-                featured
-                icon="dollar"
-                label="Dólar MEP implícito"
-                value={snapshot.mep ? money(snapshot.mep) : '—'}
-                foot="mediana de CEDEARs"
-                bars={[5, 7, 6, 8, 7, 9, 8, 10]}
-              />
-              {movers.up && (
-                <Kpi
-                  icon="arrowUp"
-                  label={`Mayor suba · ${movers.up.symbol}`}
-                  value={money(movers.up.last)}
-                  delta={signedPct(movers.up.changePct)}
-                  deltaTone="up"
-                  foot="hoy"
-                />
-              )}
-              {movers.down && (
-                <Kpi
-                  icon="arrowDown"
-                  label={`Mayor baja · ${movers.down.symbol}`}
-                  value={money(movers.down.last)}
-                  delta={signedPct(movers.down.changePct)}
-                  deltaTone="down"
-                  foot="hoy"
-                />
-              )}
-              {movers.top && (
-                <Kpi
-                  icon="flame"
-                  label={`Más operado · ${movers.top.symbol}`}
-                  value={`$ ${short(movers.top.volume * movers.top.last)}`}
-                  delta={signedPct(movers.top.changePct)}
-                  deltaTone={tone(movers.top.changePct)}
-                  foot="volumen"
-                />
-              )}
-            </>
-          ) : (
-            [0, 1, 2, 3].map((i) => (
-              <div key={i} className="kpi">
-                <Skeleton h={14} w="60%" />
-                <Skeleton h={30} w="80%" />
-              </div>
-            ))
-          )}
-        </div>
-      </section>
+      <header className="calc-head">
+        <span className="eyebrow">
+          <span className="eyebrow__dot" /> Gratis · {quotes.length ? `${int(quotes.length)} CEDEARs` : 'CEDEARs de BYMA'}
+        </span>
+        <h1 className="calc-head__title">
+          Calculadora de CEDEARs: <span>¿te dan ganancia?</span>
+        </h1>
+        <p className="calc-head__sub">Cargá qué compraste y cuánto pagaste. Te mostramos el resultado en pesos y en dólares, y cómo te fue contra el SPY.</p>
+      </header>
 
       <div className="calc-grid">
         <Card title="¿Qué compraste?" icon="calc" className="calc-form-card">
@@ -221,10 +177,21 @@ export function CalculatorView({
                   describedBy={errors.symbol ? 'e-symbol' : undefined}
                 />
               </div>
-              {errors.symbol && (
+              {errors.symbol ? (
                 <p className="field__error" id="e-symbol" role="alert">
                   {errors.symbol}
                 </p>
+              ) : (
+                !form.symbol && (
+                  <div className="quick-picks" aria-label="CEDEARs populares">
+                    <span className="field__hint">Populares:</span>
+                    {['AAPL', 'MELI', 'NVDA', 'SPY'].filter((s) => known.has(s)).map((s) => (
+                      <button key={s} type="button" className="chip chip--sm" onClick={() => set('symbol')(s)}>
+                        {s}
+                      </button>
+                    ))}
+                  </div>
+                )
               )}
             </div>
 
@@ -305,7 +272,7 @@ export function CalculatorView({
                 </p>
               ) : (
                 <p className="field__hint" id="h-date">
-                  Con la fecha calculamos rendimiento anual y comparamos contra el {BENCHMARK}
+                  Para ver rendimiento anual y compararte con el {BENCHMARK}
                 </p>
               )}
             </div>
@@ -333,14 +300,23 @@ export function CalculatorView({
           {!calc && (
             <Card className="result-empty">
               <Empty icon="target" title="Tu resultado aparece acá">
-                <p>Elegí un CEDEAR, cargá los nominales y el total que pagaste. La fecha es opcional.</p>
-                <div className="chips">
-                  {['AAPL', 'MELI', 'NVDA', 'SPY', 'KO'].filter((s) => known.has(s)).map((s) => (
-                    <button key={s} className="chip" onClick={() => set('symbol')(s)}>
-                      {s}
-                    </button>
-                  ))}
-                </div>
+                <ol className="steps">
+                  <li>
+                    <span>
+                      <b>Elegí el CEDEAR</b> por ticker o por empresa.
+                    </span>
+                  </li>
+                  <li>
+                    <span>
+                      <b>Cargá nominales y total pagado</b> en pesos, como figura en tu broker.
+                    </span>
+                  </li>
+                  <li>
+                    <span>
+                      <b>Sumá la fecha</b> (opcional) para ver rendimiento anual y compararte con el SPY.
+                    </span>
+                  </li>
+                </ol>
               </Empty>
             </Card>
           )}
@@ -525,6 +501,53 @@ export function CalculatorView({
           )}
         </div>
       </div>
+
+      <section className="pulse" aria-labelledby="pulse-title">
+        <div className="pulse__head">
+          <h2 id="pulse-title">El mercado hoy</h2>
+          <span className="muted small">Tocá un CEDEAR para calcularlo</span>
+        </div>
+        <div className="pulse__grid">
+          {snapshot ? (
+            <>
+              <div className="pulse__item pulse__item--featured">
+                <span className="pulse__label">
+                  <Icon name="dollar" size={14} /> Dólar MEP implícito
+                </span>
+                <strong className="pulse__value">{snapshot.mep ? money(snapshot.mep) : '—'}</strong>
+                <span className="pulse__foot">mediana de CEDEARs</span>
+              </div>
+              {(
+                [
+                  ['up', 'arrowUp', 'Mayor suba', movers.up],
+                  ['down', 'arrowDown', 'Mayor baja', movers.down],
+                  ['top', 'flame', 'Más operado', movers.top],
+                ] as const
+              ).map(([key, icon, label, q]) =>
+                q ? (
+                  <button key={key} type="button" className="pulse__item" onClick={() => pickMover(q.symbol)}>
+                    <span className="pulse__label">
+                      <Icon name={icon} size={14} /> {label}
+                    </span>
+                    <strong className="pulse__value">{q.symbol}</strong>
+                    <span className="pulse__foot">
+                      <span className={`t-${tone(q.changePct)}`}>{signedPct(q.changePct)}</span>
+                      <span className="pulse__extra">{key === 'top' ? ` · $ ${short(q.volume * q.last)}` : ` · ${money(q.last)}`}</span>
+                    </span>
+                  </button>
+                ) : null,
+              )}
+            </>
+          ) : (
+            [0, 1, 2, 3].map((i) => (
+              <div key={i} className="pulse__item">
+                <Skeleton h={12} w="60%" />
+                <Skeleton h={22} w="70%" />
+              </div>
+            ))
+          )}
+        </div>
+      </section>
     </div>
   );
 }
