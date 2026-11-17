@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from 'react';
-import type { Candle, CedearQuote, SavedEntry } from '../lib/types';
+import { useMemo } from 'react';
+import type { CedearQuote, SavedEntry } from '../lib/types';
 import { BENCHMARK, CATALOG_BY_SYMBOL, SECTOR_COLOR } from '../data/catalog';
-import { market } from '../data/providers';
+import { useHistories } from '../data/hooks';
 import { aggregateHoldings, closeAt } from '../lib/pnl';
 import { int, money, money0, pct, signedMoney, signedMoney0, signedPct, signedPctShort, tone, usd } from '../lib/format';
 import { AreaChart, Donut, PillBars } from '../components/Charts';
@@ -27,25 +27,6 @@ export function LoginGate({ title, text }: { title: string; text: string }) {
       </section>
     </div>
   );
-}
-
-/** Carga el histórico de varios símbolos (pocos: los del portfolio). */
-function useHistories(symbols: string[]) {
-  const key = symbols.join(',');
-  const [data, setData] = useState<Map<string, Candle[]>>(new Map());
-  const [loading, setLoading] = useState(false);
-  useEffect(() => {
-    if (!key) return;
-    let alive = true;
-    setLoading(true);
-    Promise.all(key.split(',').map((s) => market.getHistory(s).then((h) => [s, h] as const).catch(() => [s, [] as Candle[]] as const)))
-      .then((pairs) => alive && setData(new Map(pairs)))
-      .finally(() => alive && setLoading(false));
-    return () => {
-      alive = false;
-    };
-  }, [key]);
-  return { data, loading };
 }
 
 export function PortfolioView({

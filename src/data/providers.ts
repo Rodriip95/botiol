@@ -164,29 +164,5 @@ export const data912Provider: MarketProvider = {
 /* Selección y caché                                                   */
 /* ------------------------------------------------------------------ */
 
-const base: MarketProvider = import.meta.env.VITE_DATA_PROVIDER === 'data912' ? data912Provider : mockProvider;
-
-const SNAPSHOT_TTL_MS = 30_000;
-let snapshotCache: { at: number; value: Promise<MarketSnapshot> } | null = null;
-const historyCache = new Map<string, Promise<Candle[]>>();
-
-export const market: MarketProvider = {
-  id: base.id,
-  getSnapshot() {
-    if (!snapshotCache || Date.now() - snapshotCache.at > SNAPSHOT_TTL_MS) {
-      const value = base.getSnapshot();
-      snapshotCache = { at: Date.now(), value };
-      value.catch(() => (snapshotCache = null));
-    }
-    return snapshotCache.value;
-  },
-  getHistory(symbol) {
-    let p = historyCache.get(symbol);
-    if (!p) {
-      p = base.getHistory(symbol);
-      historyCache.set(symbol, p);
-      p.catch(() => historyCache.delete(symbol));
-    }
-    return p;
-  },
-};
+/** Proveedor activo. La caché, los reintentos y el refresco los maneja TanStack Query (ver data/hooks.ts). */
+export const market: MarketProvider = import.meta.env.VITE_DATA_PROVIDER === 'data912' ? data912Provider : mockProvider;
