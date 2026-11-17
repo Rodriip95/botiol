@@ -64,10 +64,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
     const { auth } = await getFirebase();
-    const { GoogleAuthProvider, signInWithPopup } = await import('firebase/auth');
+    const { GoogleAuthProvider, signInWithPopup, signInWithRedirect } = await import('firebase/auth');
     const provider = new GoogleAuthProvider();
     provider.setCustomParameters({ prompt: 'select_account' });
-    await signInWithPopup(auth, provider);
+    try {
+      await signInWithPopup(auth, provider);
+    } catch (err) {
+      const code = (err as { code?: string }).code;
+      // El usuario cerró el popup: no es un error.
+      if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') return;
+      // Navegador que bloquea popups (Safari iOS, in-app browsers): ir por redirect.
+      if (code === 'auth/popup-blocked' || code === 'auth/operation-not-supported-in-this-environment') {
+        await signInWithRedirect(auth, provider);
+        return;
+      }
+      if (code === 'auth/unauthorized-domain') {
+        console.error(`Agregá "${location.hostname}" en Firebase Console → Authentication → Settings → Authorized domains.`);
+      }
+      throw err;
+    }
   }, [mode]);
 
   const signOut = useCallback(async () => {
