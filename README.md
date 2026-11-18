@@ -14,7 +14,7 @@ Todo funciona con **mocks** por defecto: no hace falta configurar nada para verl
 
 ## Correr en local
 
-Requiere Node 22+ y pnpm 10.
+Requiere Node 24.12+ (lo pide Firebase) y pnpm 10.
 
 ```bash
 pnpm install
@@ -39,7 +39,7 @@ Copiá `.env.example` a `.env.local` y completá las variables. El `.gitignore` 
 
 | Variable                            | Necesaria para        | Valor                                            |
 | ----------------------------------- | --------------------- | ------------------------------------------------ |
-| `VITE_DATA_PROVIDER`                | Cotizaciones reales   | `mock` (por defecto) o `data912`                 |
+| `VITE_DATA_PROVIDER`                | Cotizaciones reales   | `mock` o `data912`. Sin definir: `data912` en el build de producción y `mock` en `pnpm dev`. En el deploy de producción de Vercel, cualquier valor distinto de `data912` hace fallar el build. |
 | `VITE_FIREBASE_API_KEY`             | Login y guardado      | Firebase Console → Configuración → App web       |
 | `VITE_FIREBASE_AUTH_DOMAIN`         | Login y guardado      | `tu-proyecto.firebaseapp.com`                    |
 | `VITE_FIREBASE_PROJECT_ID`          | Login y guardado      | `tu-proyecto`                                    |
