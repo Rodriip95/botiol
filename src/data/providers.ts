@@ -164,5 +164,10 @@ export const data912Provider: MarketProvider = {
 /* Selección y caché                                                   */
 /* ------------------------------------------------------------------ */
 
-/** Proveedor activo. La caché, los reintentos y el refresco los maneja TanStack Query (ver data/hooks.ts). */
-export const market: MarketProvider = import.meta.env.VITE_DATA_PROVIDER === 'data912' ? data912Provider : mockProvider;
+/**
+ * Proveedor activo. Sin VITE_DATA_PROVIDER: data912 en el build de producción y mock en `pnpm dev`,
+ * así la web publicada nunca muestra precios de ejemplo por olvidarse la variable (vite.config.ts lo valida).
+ * La caché, los reintentos y el refresco los maneja TanStack Query (ver data/hooks.ts).
+ */
+const providerId = import.meta.env.VITE_DATA_PROVIDER ?? (import.meta.env.PROD ? 'data912' : 'mock');
+export const market: MarketProvider = providerId === 'data912' ? data912Provider : mockProvider;
